@@ -1,5 +1,5 @@
 {
-  "name": "starfish",
+  "name": "starfish-sdk",
   "version": "0.7.0",
   "description": "Javascript wrapper for Starfish APIs",
   "main": "lib/starfish.js",
