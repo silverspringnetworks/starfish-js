@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/silverspringiot/starfish-js.svg?style=svg)](https://circleci.com/gh/silverspringiot/starfish-js)
+[![CircleCI](https://circleci.com/gh/silverspringnetworks/starfish-js.svg?style=svg)](https://circleci.com/gh/silverspringnetworks/starfish-js)
 
 # Starfish JS
 A Javascript Wrapper for the Starfish APIs
@@ -6,7 +6,7 @@ A Javascript Wrapper for the Starfish APIs
 ## Install
 
 ```
-npm install git+https://github.com/silverspringiot/starfish-js.git
+npm install starfish-sdk
 ```
 
 ## Usage

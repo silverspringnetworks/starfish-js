@@ -1,5 +1,5 @@
 {
-  "name": "starfish",
+  "name": "starfish-sdk",
   "version": "0.7.0",
   "description": "Javascript wrapper for Starfish APIs",
   "main": "lib/starfish.js",
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/silverspringiot/starfish-js.git"
+    "url": "https://github.com/silverspringnetworks/starfish-js.git"
   },
   "author": "Silver Spring Networks",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/silverspringiot/starfish-js/issues"
+    "url": "https://github.com/silverspringnetworks/starfish-js/issues"
   },
-  "homepage": "https://github.com/silverspringiot/starfish-js#readme",
+  "homepage": "https://github.com/silverspringnetworks/starfish-js#readme",
   "devDependencies": {
     "babel-core": "6.18.2",
     "babel-preset-es2015": "6.18.0",
