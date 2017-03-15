@@ -12,7 +12,7 @@ npm install starfish-sdk
 ## Usage
 
 ```js
-  const Starfish = require('starfish');
+  const Starfish = require('starfish-sdk');
   const options = {
     'credentials' : {
       'clientId' : 'your-client-id',
