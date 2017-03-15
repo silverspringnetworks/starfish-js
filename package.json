@@ -1,6 +1,6 @@
 {
   "name": "starfish-sdk",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Javascript wrapper for Starfish APIs",
   "main": "lib/starfish.js",
   "directories": {
