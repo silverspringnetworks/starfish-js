@@ -1,11 +1,8 @@
 {
   "name": "starfish-sdk",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Javascript wrapper for Starfish APIs",
   "main": "dist/starfish.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
     "test": "mocha --compilers js:babel-core/register ./test/*",
     "prepublish": "npm run build && require-self",
