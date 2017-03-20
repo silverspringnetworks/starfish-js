@@ -4,7 +4,8 @@ import {expect} from "chai";
 import mockery from "mockery";
 import jwt from 'jsonwebtoken';
 import sinon from 'sinon';
-import StarfishService from '../lib/starfish';
+
+import StarfishService from '..';
 
 const foobar = "01:02:03:04:05:06";
 const foobar2 = "ab:cd:ef:gh:ij:kl";
