@@ -1,4 +1,5 @@
-import path from 'path';
+var path = require('path');
+var webpack = require('webpack');
 
 module.exports = {
   entry: './lib/starfish.js',
@@ -8,14 +9,16 @@ module.exports = {
     library: 'StarfishService'
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
-        exclude: /(bower_components)/,
-        loader: 'babel-loader',
-        query: {
-          presets: ['env']
-        }
+        loader: "babel-loader",
+        exclude: [
+          path.resolve(__dirname, "test"),
+          path.resolve(__dirname, "dist"),
+          path.resolve(__dirname, "webdist"),
+          path.resolve(__dirname, "node_modules")
+        ]
       }
     ]
   },
@@ -24,5 +27,10 @@ module.exports = {
     net: 'empty',
     tls: 'empty',
     dns: 'empty'
-  }
+  },
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+    })
+  ]
 };
