@@ -90,7 +90,7 @@ The following examples assume that you have an instance of starfish named `starf
     if(err) {
       console.log("Error:", err)
     } else {
-      console.log("Return device observations: ", JSON.Stringify(data))
+      console.log("Return device observations: ", JSON.stringify(data))
     }
   })
 ```
@@ -103,7 +103,7 @@ The following examples assume that you have an instance of starfish named `starf
     if(err) {
       console.log("Error:", err)
     } else {
-      console.log("Return all device observations: ", JSON.Stringify(data))
+      console.log("Return all device observations: ", JSON.stringify(data))
     }
   })
 
