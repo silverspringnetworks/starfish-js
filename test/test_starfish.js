@@ -97,7 +97,7 @@ describe('StarfishService', () =>  {
     rpCallCount = 0;
     rpOptions = [];
     host = "http://localhost:3000";
-    token = "tokenissecret";
+    token = jwt.sign({exp: Date.now() + 1000}, 'secret');
     starfishResponses = [];
     isSuccess = undefined;
     starfishErrorResponse = new Error("No devices found");
@@ -212,7 +212,7 @@ describe('StarfishService', () =>  {
 
       fetch.onFirstCall().returns(Promise.resolve(new Response("{}")))
 
-      service.postDeviceObservation("deviceId", buildObservations(), (err, response) => {
+      service.postDeviceObservation("deviceid", buildObservations(), (err, response) => {
         expect(err).to.be.null;
         expect(response).to.be.not.null;
         expect(response).to.deep.equal({});
@@ -227,9 +227,9 @@ describe('StarfishService', () =>  {
 
       fetch.onFirstCall().returns(Promise.reject(expectedError))
 
-      service.postDeviceObservation("deviceId", buildObservations(), (err, response) => {
-        expect(response).to.be.null;
-        expect(err).to.be.not.null;
+      service.postDeviceObservation("deviceid", buildObservations(), (err, response) => {
+        expect(response).to.not.exist;
+        expect(err).to.not.be.null;
         expect(err).to.equal(expectedError);
         done();
       });
@@ -238,15 +238,14 @@ describe('StarfishService', () =>  {
   describe('postDevice', () => {
     it('should return success if post to devices api is success.', (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = starfishResponses[0] = {id: "123"};
+      const expected = {"id": "123"};
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
 
-      isSuccess = true;
-
-      const testDevice = {"deviceType": "Test", "domainInfo": {}}
+      const testDevice = {"deviceType": "test", "domainInfo": {}}
       service.postDevice(testDevice, (err, response) => {
-        expect(err).to.be.null;
-        expect(response).to.be.not.null;
-        expect(response).to.equal(expected);
+        expect(err).to.not.exist;
+        expect(response).to.not.be.null;
+        expect(response).to.deep.equal(expected);
         done();
       });
     });
@@ -254,13 +253,15 @@ describe('StarfishService', () =>  {
     it('should return error if post to starfish devices api has failed.', (done) => {
       let service = new StarfishService(host, solution, token);
 
-      isSuccess = false;
+      const theError = new Error("bad mojo")
+      fetch.onFirstCall().rejects(theError)
 
-      const testDevice = {"deviceType": "Test", "domainInfo": {}}
-      service.postDevice(testDevice, (err, response) => {
-        expect(response).to.be.null;
+
+      const testdevice = {"devicetype": "test", "domaininfo": {}}
+      service.postDevice(testdevice, (err, response) => {
+        expect(response).to.not.exist;
         expect(err).to.be.not.null;
-        expect(err).to.equal(starfishErrorResponse);
+        expect(err).to.equal(theError);
         done();
       });
     });
@@ -268,28 +269,27 @@ describe('StarfishService', () =>  {
 
   describe('deleteDevice', () => {
     it('should return success if delete to device api is success.', (done) => {
-      let service = new StarfishService(host, solution, token);
-      const expected = starfishResponses[0] = {};
-
-      isSuccess = true;
+      const service = new StarfishService(host, solution, token);
+      const expected = {};
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
 
       service.deleteDevice("1234", (err, response) => {
-        expect(err).to.be.null;
+        expect(err).to.not.exist;
         expect(response).to.be.not.null;
-        expect(response).to.equal(expected);
+        expect(response).to.deep.equal(expected);
         done();
       });
     });
 
     it('should return error if delete to device api has failed.', (done) => {
-      let service = new StarfishService(host, solution, token);
-
-      isSuccess = false;
+      const service = new StarfishService(host, solution, token);
+      const theError = new Error("bad mojo")
+      fetch.onFirstCall().rejects(theError)
 
       service.deleteDevice("not-found-device-id", (err, response) => {
-        expect(response).to.be.null;
+        expect(response).to.not.exist;
         expect(err).to.be.not.null;
-        expect(err).to.equal(starfishErrorResponse);
+        expect(err).to.equal(theError);
         done();
       });
     });
@@ -297,22 +297,20 @@ describe('StarfishService', () =>  {
   describe('getObservations', () => {
     it("should return the api response", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = starfishResponses[0] = [buildObservations()];
-
-      isSuccess = true;
+      const expected = [buildObservations()];
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
 
       service.getObservations((err, response) => {
         expect(err).to.be.null;
         expect(response).to.be.not.null;
-        expect(response).to.equal(expected);
+        expect(response).to.deep.equal(expected);
         done();
       });
     });
     it("should respond with empty array if no device observations", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = starfishResponses[0] = [];
-
-      isSuccess = true;
+      const expected = [];
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
 
       service.getObservations((err, response) => {
         expect(response).to.be.an('array').that.is.empty;
@@ -321,9 +319,8 @@ describe('StarfishService', () =>  {
     });
     it("should error if response is null", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = starfishResponses[0] = null;
-
-      isSuccess = true;
+      const expected = null;
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
 
       service.getObservations((err, response) => {
         expect(err.message).to.equal("No observations found");
@@ -333,9 +330,9 @@ describe('StarfishService', () =>  {
     });
     it("should error if get request fails", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = starfishErrorResponse = "Really Bad Error";
+      const expected = new Error("something bad");
 
-      isSuccess = false;
+      fetch.onFirstCall().rejects(expected);
 
       service.getObservations((err, response) => {
         expect(err).to.equal(expected);
@@ -345,47 +342,43 @@ describe('StarfishService', () =>  {
     });
   });
   describe('getDeviceObservations', () => {
-    it("should include the deviceId in the URI", (done) => {
+    it("should include the deviceid in the uri", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = starfishResponses[0] = [buildObservations()];
-      const deviceId = '1234'
+      const expected = [buildObservations()];
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
+      const deviceid = '1234'
 
-      isSuccess = true;
-
-      service.getDeviceObservations(deviceId, (err, response) => {
-        expect(rpOptions[0].uri).has.match(new RegExp(".*devices\/" + deviceId + "\/observations$"));
+      service.getDeviceObservations(deviceid, (err, response) => {
+        expect(fetch.calledWithMatch(new RegExp(".*devices\/" + deviceid + "\/observations$"))).to.be.true
         done();
       });
     });
-    it("should include the solution in the URI", (done) => {
+    it("should include the solution in the uri", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = starfishResponses[0] = [buildObservations()];
-
-      isSuccess = true;
+      const expected = [buildObservations()];
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
 
       service.getDeviceObservations('1234', (err, response) => {
-        expect(rpOptions[0].uri).has.match(new RegExp(".*\/solutions\/" + solution + "\/devices"));
+        expect(fetch.calledWithMatch(new RegExp(".*solutions\/" + solution + "\/devices"))).to.be.true
         done();
       });
     });
     it("should return the api response", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = starfishResponses[0] = [buildObservations()];
-
-      isSuccess = true;
+      const expected = [buildObservations()];
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
 
       service.getDeviceObservations('1234', (err, response) => {
-        expect(err).to.be.null;
+        expect(err).to.not.exist;
         expect(response).to.be.not.null;
-        expect(response).to.equal(expected);
+        expect(response).to.deep.equal(expected);
         done();
       });
     });
     it("should respond with empty array if no device observations", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = starfishResponses[0] = [];
-
-      isSuccess = true;
+      const expected = [];
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
 
       service.getDeviceObservations('1234', (err, response) => {
         expect(response).to.be.an('array').that.is.empty;
@@ -394,9 +387,8 @@ describe('StarfishService', () =>  {
     });
     it("should error if response is null", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = starfishResponses[0] = null;
-
-      isSuccess = true;
+      const expected = null;
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
 
       service.getDeviceObservations('1234', (err, response) => {
         expect(err.message).to.equal("No observations found");
@@ -406,12 +398,11 @@ describe('StarfishService', () =>  {
     });
     it("should error if get request fails", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = starfishErrorResponse = "Really Bad Error";
-
-      isSuccess = false;
+      const theError = new Error("wubba lubba dubba")
+      fetch.onFirstCall().rejects(theError);
 
       service.getDeviceObservations('1234', (err, response) => {
-        expect(err).to.equal(expected);
+        expect(err).to.equal(theError);
         expect(response).to.not.exist;
         done();
       });
@@ -421,8 +412,8 @@ describe('StarfishService', () =>  {
     const now = 1475175515;
     const expiredToken = jwt.sign({exp: now - 1}, 'secret');
     const freshToken = jwt.sign({exp: now + 1}, 'secret');
-    const clientId = "expectedClientId";
-    const secret = "expectedSecret";
+    const clientId = "expectedclientId";
+    const secret = "expectedsecret";
     let service
 
     let clock;
@@ -438,10 +429,12 @@ describe('StarfishService', () =>  {
     });
 
     it("should call callback with error", done => {
-      isSuccess = false;
-      const expected = starfishErrorResponse = "expectedError";
+      const theError = new Error("thwap");
+      fetch.onFirstCall().rejects(theError);
+
+      const expected = "expectederror";
       service.getToken("", "", (error, result) => {
-        expect(error).to.equal(expected);
+        expect(error).to.equal(theError);
         done();
       });
     });
@@ -464,27 +457,27 @@ describe('StarfishService', () =>  {
 
       context(scenario.method, () => {
         it("should auto get token with clientId and secret first call", done => {
-          isSuccess = true;
-          starfishResponses.push({accessToken: freshToken});
-          starfishResponses.push(scenario.response);
+          fetch.onFirstCall().resolves(new Response(JSON.stringify({accessToken: freshToken})))
+          fetch.onSecondCall().resolves(new Response(JSON.stringify(scenario.response)))
 
           call((error, result) => {
-            expect(rpOptions[0]).to.have.deep.property('body.clientId', clientId);
-            expect(rpOptions[0]).to.have.deep.property('body.clientSecret', secret);
+            const tokenResponse = JSON.parse(fetch.firstCall.args[1].body)
+            expect(tokenResponse).to.have.deep.property('clientId', clientId);
+            expect(tokenResponse).to.have.deep.property('clientSecret', secret);
             expect(service.token).to.equal(freshToken);
             done();
           });
         });
         it("should get a new token if the current token is expired", done => {
-          isSuccess = true;
-          starfishResponses.push({accessToken: freshToken});
-          starfishResponses.push(scenario.response);
+          fetch.onFirstCall().resolves(new Response(JSON.stringify({accessToken: freshToken})))
+          fetch.onSecondCall().resolves(new Response(JSON.stringify(scenario.response)))
 
           service.token = expiredToken;
 
           call((error, result) => {
-            expect(rpOptions[0]).to.have.deep.property('body.clientId', clientId);
-            expect(rpOptions[0]).to.have.deep.property('body.clientSecret', secret);
+            const tokenResponse = JSON.parse(fetch.firstCall.args[1].body)
+            expect(tokenResponse).to.have.deep.property('clientId', clientId);
+            expect(tokenResponse).to.have.deep.property('clientSecret', secret);
             expect(service.token).to.equal(freshToken);
             done();
           });
