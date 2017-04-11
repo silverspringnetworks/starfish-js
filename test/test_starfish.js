@@ -33,11 +33,16 @@ import 'isomorphic-fetch';
 import {expect} from "chai";
 import jwt from 'jsonwebtoken';
 import sinon from 'sinon';
+import sinonTest from 'sinon-test';
 
-import StarfishService from '..';
+import StarfishService from '../lib/starfish';
+
+sinon.test = sinonTest.configureTest(sinon);
+sinon.testCase = sinonTest.configureTestCase(sinon);
 
 const foobar = "01:02:03:04:05:06";
 const foobar2 = "ab:cd:ef:gh:ij:kl";
+
 
 function buildDevices() {
   var response = {
@@ -482,21 +487,20 @@ describe('StarfishService', () =>  {
             done();
           });
         });
-        it("should not call getToken if the token is fresh", done => {
-          sinon.spy(service, 'getToken');
-          isSuccess = true;
-          starfishResponses.push(scenario.response);
+        it("should not call getToken if the token is fresh", sinon.test(function(done)  {
+          fetch.onFirstCall().resolves(new Response(JSON.stringify(scenario.response)))
+
+          this.spy(service, 'getToken');
           service.token = freshToken;
 
           call((error, result) => {
             expect(service.getToken.called).to.be.false;
             done();
           });
-        });
+        }));
         it("should call callback with error if withToken fails", done => {
-          isSuccess = false;
-          const expected = starfishErrorResponse = "oh gosh!";
-          starfishResponses.push(scenario.response);
+          const expected = new Error("oh gosh!");
+          fetch.onFirstCall().rejects(expected);
           service.token = expiredToken;
 
           call((error, result) => {
@@ -504,10 +508,12 @@ describe('StarfishService', () =>  {
             done();
           });
         });
-        const expectedClientId = "aGreatClientId";
-        const expectedClientSecret = "theBestClientSecret";
 
         it('should use the credentials defined in options', done => {
+          fetch.onFirstCall().resolves(new Response(JSON.stringify({accessToken: freshToken})))
+          fetch.onSecondCall().resolves(new Response(JSON.stringify(scenario.response)))
+          const expectedClientId = "aGreatClientId";
+          const expectedClientSecret = "theBestClientSecret";
           service = new StarfishService({
             credentials: {
               clientId: expectedClientId,
@@ -515,13 +521,15 @@ describe('StarfishService', () =>  {
             }
           });
           call((error, result) => {
-            expect(rpOptions[0]).to.have.deep.property('body.clientId', expectedClientId);
-            expect(rpOptions[0]).to.have.deep.property('body.clientSecret', expectedClientSecret);
+            const body = JSON.parse(fetch.firstCall.args[1].body);
+            expect(body.clientId).to.equal(expectedClientId);
+            expect(body.clientSecret).to.equal(expectedClientSecret);
             done();
           });
         })
 
         it('should use the solution defined in options', (done) => {
+          fetch.onFirstCall().resolves(new Response(JSON.stringify(scenario.response)))
           const expectedSolution = 'testSolution'
           const options = {
             'endpoint' : 'https://starfishendpoint.com',
@@ -530,23 +538,27 @@ describe('StarfishService', () =>  {
           }
           service = new StarfishService(options)
           call((error, result) => {
-            expect(rpOptions[0].uri).has.match(new RegExp(".*\/solutions\/" + expectedSolution));
+            const uri = fetch.firstCall.args[0];
+            expect(uri).to.match(new RegExp(".*\/solutions\/" + expectedSolution));
             done();
           })
         })
         it('should use sandbox as solution if not defined in options', (done) => {
+          fetch.onFirstCall().resolves(new Response(JSON.stringify(scenario.response)))
           const expectedSolution = 'sandbox'
           const options = {
             'endpoint' : 'https://starfishendpoint.com',
             'token': 'someToken'
           }
           service = new StarfishService(options)
+
           call((error, result) => {
-            expect(rpOptions[0].uri).has.match(new RegExp(".*\/solutions\/" + expectedSolution));
+            expect(fetch.firstCall.args[0]).to.match(new RegExp(".*\/solutions\/" + expectedSolution));
             done();
           })
         })
         it('should use the endpoint defined in options', (done) => {
+          fetch.onFirstCall().resolves(new Response(JSON.stringify(scenario.response)))
           const expectedEndpoint = "https://example.com"
           const options = {
             endpoint: expectedEndpoint,
@@ -554,30 +566,32 @@ describe('StarfishService', () =>  {
           }
           service = new StarfishService(options)
           call((error, result) => {
-            expect(rpOptions[0].uri).has.match(new RegExp("^" + expectedEndpoint));
+            expect(fetch.firstCall.args[0]).has.match(new RegExp("^" + expectedEndpoint));
             done();
           })
         })
 
         it('should use the default endpoint if not defined in options', (done) => {
+          fetch.onFirstCall().resolves(new Response(JSON.stringify(scenario.response)))
           const expectedEndpoint = "https://poc.api.ssniot.cloud"
           const options = {
             'token': 'someToken'
           }
           service = new StarfishService(options)
           call((error, result) => {
-            expect(rpOptions[0].uri).has.match(new RegExp("^" + expectedEndpoint));
+            expect(fetch.firstCall.args[0]).has.match(new RegExp("^" + expectedEndpoint));
             done();
           })
         })
         it("should use the token if defined in options", (done) => {
+          fetch.onFirstCall().resolves(new Response(JSON.stringify(scenario.response)))
           const expectedToken = "myToken"
           const options = {
             token: expectedToken
           }
           service = new StarfishService(options)
           call((error, result) => {
-            expect(rpOptions[0].headers.Authorization).to.equal(expectedToken);
+            expect(fetch.firstCall.args[1].headers.Authorization).to.equal(expectedToken);
             done();
           })
         })
