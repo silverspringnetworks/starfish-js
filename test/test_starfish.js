@@ -1,6 +1,6 @@
 /*
 Copyright (c) Silver Spring Networks, Inc.
-
+s
 All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -487,6 +487,19 @@ describe('StarfishService', () =>  {
             done();
           });
         });
+        it("should call callback with error if token is not valid", done => {
+          fetch.onFirstCall().resolves(new Response(JSON.stringify({accessToken: freshToken})))
+          fetch.onSecondCall().resolves(new Response(JSON.stringify(scenario.response)))
+
+          service.token = "not a valid token";
+
+          call((error, result) => {
+            expect(error).to.exist;
+            expect(result).to.not.exist;
+            done();
+          });
+
+        })
         it("should not call getToken if the token is fresh", sinon.test(function(done)  {
           fetch.onFirstCall().resolves(new Response(JSON.stringify(scenario.response)))
 
