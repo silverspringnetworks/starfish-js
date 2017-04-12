@@ -1,10 +1,10 @@
 {
   "name": "starfish-sdk",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "Javascript wrapper for Starfish APIs",
   "main": "dist/starfish.js",
   "scripts": {
-    "test": "npm run build && mocha --compilers js:babel-core/register ./test/*",
+    "test": "mocha --compilers js:babel-core/register ./test/*",
     "prepublish": "npm run build",
     "build": "babel lib --out-dir dist",
     "webpack": "webpack -p"
@@ -31,12 +31,11 @@
     "chai": "3.5.0",
     "jsonwebtoken": "7.1.9",
     "mocha": "3.1.2",
-    "mockery": "2.0.0",
+    "sinon": "2.1.0",
     "sinon-test": "1.0.1",
     "webpack": "2.2.1"
   },
   "dependencies": {
-    "isomorphic-fetch": "2.2.1",
-    "sinon": "2.1.0"
+    "isomorphic-fetch": "2.2.1"
   }
 }
