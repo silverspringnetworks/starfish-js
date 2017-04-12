@@ -494,7 +494,7 @@ describe('StarfishService', () =>  {
           service.token = "not a valid token";
 
           call((error, result) => {
-            expect(error).to.exist;
+            expect(error).to.be.an.instanceOf(Error);
             expect(result).to.not.exist;
             done();
           });
