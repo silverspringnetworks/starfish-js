@@ -586,7 +586,7 @@ describe('StarfishService', () =>  {
 
         it('should use the default endpoint if not defined in options', (done) => {
           fetch.onFirstCall().resolves(new Response(JSON.stringify(scenario.response)))
-          const expectedEndpoint = "https://poc.api.ssniot.cloud"
+          const expectedEndpoint = "https://api.data-platform.developer.ssni.com"
           const options = {
             'token': 'someToken'
           }
