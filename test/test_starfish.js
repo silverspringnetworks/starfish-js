@@ -447,6 +447,7 @@ describe('StarfishService', () =>  {
     [
       {method: "getObservations", args: [], response: {}},
       {method: "getDevices", args: [], response: {devices: []}},
+      {method: "queryDevices", args: [{deviceType: 'ap'}], response: {}},
       {method: "queryObservations", args: [{from: 'x', to: 'y'}], response: {}},
       {method: "postDeviceObservation", args: ["did", {}], response: {}},
       {method: "getDeviceObservations", args: ["did"], response: {}},
