@@ -81,6 +81,18 @@ The following examples assume that you have an instance of starfish named `starf
   })
 ```
 
+### Query Devices by `deviceType`
+
+```js
+  starfish.queryDevices({deviceType:'type'}, (err, data) => {
+    if(err) {
+      console.log("Error:", err)
+    } else {
+      console.log("Return devices: ", data)
+    }
+  })
+```
+
 ### Get Device Observations
 
 ```js
