@@ -449,6 +449,7 @@ describe('StarfishService', () =>  {
       {method: "getDevices", args: [], response: {devices: []}},
       {method: "queryDevices", args: [{deviceType: 'ap'}], response: {}},
       {method: "queryObservations", args: [{from: 'x', to: 'y'}], response: {}},
+      {method: "queryDeviceObservations", args: ["did", {from: 'x', to: 'y'}], response: {}},
       {method: "postDeviceObservation", args: ["did", {}], response: {}},
       {method: "getDeviceObservations", args: ["did"], response: {}},
       {method: "postDevice", args: [{}], response: {}},
@@ -654,6 +655,29 @@ describe('StarfishService', () =>  {
         fetch.onFirstCall().returns(Promise.resolve(new Response('{}')));
 
         service.queryObservations(null, (error, response) => {
+          expect(fetch.firstCall.args[0]).has.match(new RegExp("^.*observations$"));
+          done();
+        });
+      });
+    });
+    describe('queryDeviceObservations', () => {
+      it("should use the querystring if passed", (done) => {
+        const qs = {param1:'value1', param2:'value2'};
+        const expectedQueryString = "?param1=value1&param2=value2";
+
+        const service = new StarfishService(host, solution, token);
+        fetch.onFirstCall().returns(Promise.resolve(new Response('{}')));
+
+        service.queryDeviceObservations("did", qs, (error, response) => {
+          expect(fetch.firstCall.args[0]).has.match(new RegExp("^.*" + expectedQueryString + "$"));
+          done();
+        });
+      });
+      it("should not add any querystring if not passed", (done) => {
+        const service = new StarfishService(host, solution, token);
+        fetch.onFirstCall().returns(Promise.resolve(new Response('{}')));
+
+        service.queryDeviceObservations("did", null, (error, response) => {
           expect(fetch.firstCall.args[0]).has.match(new RegExp("^.*observations$"));
           done();
         });
