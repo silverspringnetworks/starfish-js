@@ -95,6 +95,7 @@ The following examples assume that you have an instance of starfish named `starf
 
 ### Get Device Observations
  This will return the latest observations for specified device (upto 1MB of observations).
+ 
  Use `getNextPage` to paginate through the observations.
 
 ```js
@@ -126,10 +127,12 @@ The following examples assume that you have an instance of starfish named `starf
 ```
 ### Query Observations
  This will return all observations that matched the filter criteria (upto 1MB of observations)
- Use `getNextPage` to paginate through the observations.
+
+Use `getNextPage` to paginate through the observations.
 
  Observations can be queried using:
- | field            | Description                                                                                 |
+ 
+ |   Query filter   | Description                                                                                 |
  |:----------------:|:--------------------------------------------------------------------------------------------|
  | limit            | This is the maximum number of objects that may be returned. A query may return fewer than the value of limit. If not specified a default limit of 1MB is applied. If specified it will be included in the next_page link header. |
  | after            | Cursor token that is used to identify the start of the page. It is provided as part of `next_page` response header.|
