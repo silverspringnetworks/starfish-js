@@ -94,6 +94,8 @@ The following examples assume that you have an instance of starfish named `starf
 ```
 
 ### Get Device Observations
+ This will return the latest observations for specified device (upto 1MB of observations).
+ Use `getNextPage` to paginate through the observations.
 
 ```js
  const deviceId = "12345678-1234-1234-1234-0123456789ab"
@@ -103,6 +105,8 @@ The following examples assume that you have an instance of starfish named `starf
       console.log("Error:", err)
     } else {
       console.log("Return device observations: ", JSON.stringify(data))
+      if(response.next_page)
+        starfish.getNextPage(resposne.next_page, .......)
     }
   })
 ```
@@ -111,12 +115,57 @@ The following examples assume that you have an instance of starfish named `starf
  This will return the latest observations for all devices
 
  ```js
- starfish.getObservations((err, data) => {
+ starfish.getObservations((err, response) => {
+   if(err) {
+     console.log("Error:", err)
+   } else {
+     console.log("Return all device observations: ", JSON.stringify(response.data))
+   }
+ })
+
+```
+### Query Observations
+ This will return all observations that matched the filter criteria (upto 1MB of observations)
+ Use `getNextPage` to paginate through the observations.
+
+ Observations can be queried using:
+ | field            | Description                                                                                 |
+ |:----------------:|:--------------------------------------------------------------------------------------------|
+ | limit            | This is the maximum number of objects that may be returned. A query may return fewer than the value of limit. If not specified a default limit of 1MB is applied. If specified it will be included in the next_page link header. |
+ | after            | Cursor token that is used to identify the start of the page. It is provided as part of `next_page` response header.|
+ | from             | Timestamp for beginning of query range in ISO-8601 format. Observations with timestamp greater than or equal than this value will be included in the result-set. Minimum resolution shall be seconds (milliseconds will be ignored). to must also be specified and shall be greater than this value. |
+ | to               | Timestamp for end of query range in ISO-8601 format. Observations with timestamp less than this value will be included in the result-set. Minimum resolution shall be seconds (milliseconds will be ignored). from must also be specified and shall be less than this value. |
+ | tags             | Ability to filter result-set by tags. Only one tag supported at atime. This parameter will be ignored if only latest observation is requested (no to and from are specified). |
+
+ ```js
+ const query = {limit: 10}
+
+ starfish.queryObservations(query, (err, response) => {
     if(err) {
       console.log("Error:", err)
     } else {
-      console.log("Return all device observations: ", JSON.stringify(data))
+      console.log("Return all device observations: ", JSON.stringify(response.data))
+      if(response.next_page)
+        starfish.getNextPage(resposne.next_page, .......)
     }
   })
 
+ Use `queryDeviceObservations(deviceId, query, callback)` for querying device observations.
 ```
+
+### Get Next Page
+ This will return the next page of data upto the limit specified in the original request or default limit of 1MB.
+ Calls the callback with error if `next_page` is either empty or there is no data.
+
+ ```js
+ starfish.getNextPage(next_page, (err, response) => {
+    if(err) {
+      console.log("Error:", err)
+    } else {
+      console.log("Return next page data: ", JSON.stringify(response.data))
+      if(response.next_page)
+        starfish.getNextPage(reseponse.next_page, .....)
+    }
+  })
+
+ ```
