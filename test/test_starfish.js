@@ -302,8 +302,9 @@ describe('StarfishService', () =>  {
   describe('getObservations', () => {
     it("should return the api response", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = [buildObservations()];
-      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
+      const observations = [buildObservations()];
+      const expected = {data: observations };
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
 
       service.getObservations((err, response) => {
         expect(err).to.be.null;
@@ -314,11 +315,12 @@ describe('StarfishService', () =>  {
     });
     it("should respond with empty array if no device observations", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = [];
-      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
+      const observations = [];
+      const expected = {data: observations};
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
 
       service.getObservations((err, response) => {
-        expect(response).to.be.an('array').that.is.empty;
+        expect(response.data).to.be.an('array').that.is.empty;
         done();
       });
     });
@@ -345,12 +347,27 @@ describe('StarfishService', () =>  {
         done();
       });
     });
+    it("should call callback with next_page if response header has it", (done) => {
+      let service = new StarfishService(host, solution, token);
+      const response = new Response(JSON.stringify([]));
+      response.headers.set("next_page", "http://somepage.com");
+      const expected = {next_page: "http://somepage.com", data: [] };
+      fetch.onFirstCall().resolves(response);
+
+      service.getObservations((err, response) => {
+        expect(err).to.be.null;
+        expect(response).to.be.not.null;
+        expect(response).to.deep.equal(expected);
+        done();
+      });
+    });
   });
   describe('getDeviceObservations', () => {
     it("should include the deviceid in the uri", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = [buildObservations()];
-      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
+      const observations = [buildObservations()];
+      const expected = {data: observations};
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
       const deviceid = '1234'
 
       service.getDeviceObservations(deviceid, (err, response) => {
@@ -370,8 +387,9 @@ describe('StarfishService', () =>  {
     });
     it("should return the api response", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = [buildObservations()];
-      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
+      const observations = [buildObservations()];
+      const expected = {data: observations};
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
 
       service.getDeviceObservations('1234', (err, response) => {
         expect(err).to.not.exist;
@@ -382,11 +400,12 @@ describe('StarfishService', () =>  {
     });
     it("should respond with empty array if no device observations", (done) => {
       let service = new StarfishService(host, solution, token);
-      const expected = [];
-      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
+      const observations = [];
+      const expected = {data: observations};
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
 
       service.getDeviceObservations('1234', (err, response) => {
-        expect(response).to.be.an('array').that.is.empty;
+        expect(response.data).to.be.an('array').that.is.empty;
         done();
       });
     });
@@ -409,6 +428,20 @@ describe('StarfishService', () =>  {
       service.getDeviceObservations('1234', (err, response) => {
         expect(err).to.equal(theError);
         expect(response).to.not.exist;
+        done();
+      });
+    });
+    it("should call callback with next_page if response header has it", (done) => {
+      let service = new StarfishService(host, solution, token);
+      const response = new Response(JSON.stringify([]));
+      response.headers.set("next_page", "http://somepage.com");
+      const expected = {next_page: "http://somepage.com", data: [] };
+      fetch.onFirstCall().resolves(response);
+
+      service.getDeviceObservations('1234', (err, response) => {
+        expect(err).to.be.null;
+        expect(response).to.be.not.null;
+        expect(response).to.deep.equal(expected);
         done();
       });
     });
@@ -636,6 +669,19 @@ describe('StarfishService', () =>  {
           done();
         });
       });
+      it('should return error if Starfish observation api has failed.', (done) => {
+        const service = new StarfishService(host, solution, token);
+        const expectedError = new Error("boo hoo")
+
+        fetch.onFirstCall().returns(Promise.reject(expectedError))
+
+        service.queryDevices({}, (err, response) => {
+          expect(response).to.not.exist;
+          expect(err).to.not.be.null;
+          expect(err).to.equal(expectedError);
+          done();
+        });
+      });
     });
     describe('queryObservations', () => {
       it("should use the querystring if passed", (done) => {
@@ -681,6 +727,211 @@ describe('StarfishService', () =>  {
           expect(fetch.firstCall.args[0]).has.match(new RegExp("^.*observations$"));
           done();
         });
+      });
+    });
+  });
+  describe('getNextPage', () => {
+    const now = 1475175515;
+    const expiredToken = jwt.sign({exp: now - 1}, 'secret');
+    const freshToken = jwt.sign({exp: now + 1}, 'secret');
+    const clientId = "expectedclientId";
+    const secret = "expectedsecret";
+    let service;
+    let next_page = 'https://nextpage.com';
+    let response = {data:[]};
+    let clock;
+    before(() => {
+      clock = sinon.useFakeTimers(now * 1000);
+    });
+    after(() => {
+      clock.restore();
+    })
+
+    beforeEach(() => {
+      service = new StarfishService(host, solution, clientId, secret);
+    });
+
+    it("should call callback with error", done => {
+      const theError = new Error("thwap");
+      fetch.onFirstCall().rejects(theError);
+
+      const expected = "expectederror";
+      service.getToken("", "", (error, result) => {
+        expect(error).to.equal(theError);
+        done();
+      });
+    });
+    it("should auto get token with clientId and secret first call", done => {
+      fetch.onFirstCall().resolves(new Response(JSON.stringify({accessToken: freshToken})))
+      fetch.onSecondCall().resolves(new Response(JSON.stringify(response)))
+
+      service.getNextPage(next_page, (error, result) => {
+        const tokenResponse = JSON.parse(fetch.firstCall.args[1].body)
+        expect(tokenResponse).to.have.deep.property('clientId', clientId);
+        expect(tokenResponse).to.have.deep.property('clientSecret', secret);
+        expect(service.token).to.equal(freshToken);
+        done();
+      });
+    });
+    it("should get a new token if the current token is expired", done => {
+      fetch.onFirstCall().resolves(new Response(JSON.stringify({accessToken: freshToken})))
+      fetch.onSecondCall().resolves(new Response(JSON.stringify(response)))
+
+      service.token = expiredToken;
+
+      service.getNextPage(next_page, (error, result) => {
+        const tokenResponse = JSON.parse(fetch.firstCall.args[1].body)
+        expect(tokenResponse).to.have.deep.property('clientId', clientId);
+        expect(tokenResponse).to.have.deep.property('clientSecret', secret);
+        expect(service.token).to.equal(freshToken);
+        done();
+      });
+    });
+    it("should call callback with error if token is not valid", done => {
+      fetch.onFirstCall().resolves(new Response(JSON.stringify({accessToken: freshToken})))
+      fetch.onSecondCall().resolves(new Response(JSON.stringify(response)))
+
+      service.token = "not a valid token";
+
+      service.getNextPage(next_page, (error, result) => {
+        expect(error).to.be.an.instanceOf(Error);
+        expect(result).to.not.exist;
+        done();
+      });
+
+    })
+    it("should not call getToken if the token is fresh", sinon.test(function(done)  {
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(response)))
+
+      this.spy(service, 'getToken');
+      service.token = freshToken;
+
+      service.getNextPage(next_page, (error, result) => {
+        expect(service.getToken.called).to.be.false;
+        done();
+      });
+    }));
+    it("should call callback with error if withToken fails", done => {
+      const expected = new Error("oh gosh!");
+      fetch.onFirstCall().rejects(expected);
+      service.token = expiredToken;
+
+      service.getNextPage(next_page, (error, result) => {
+        expect(error).to.equal(expected);
+        done();
+      });
+    });
+    it('should use the credentials defined in options', done => {
+      fetch.onFirstCall().resolves(new Response(JSON.stringify({accessToken: freshToken})))
+      fetch.onSecondCall().resolves(new Response(JSON.stringify(response)))
+      const expectedClientId = "aGreatClientId";
+      const expectedClientSecret = "theBestClientSecret";
+      service = new StarfishService({
+        credentials: {
+          clientId: expectedClientId,
+          clientSecret: expectedClientSecret
+        }
+      });
+      service.getNextPage(next_page, (error, result) => {
+        const body = JSON.parse(fetch.firstCall.args[1].body);
+        expect(body.clientId).to.equal(expectedClientId);
+        expect(body.clientSecret).to.equal(expectedClientSecret);
+        done();
+      });
+    })
+    it('should call the callback with error if next_page is empty', (done) => {
+      const expected = "next_page not found";
+      service = new StarfishService(host, solution, token);
+
+      service.getNextPage("", (error, result) => {
+        expect(error.message).to.equal(expected);
+        done();
+      })
+    })
+    it('should use next_page argument as url', (done) => {
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(response)))
+      const options = {
+        'endpoint' : 'https://starfishendpoint.com',
+        'token': 'someToken'
+      }
+      service = new StarfishService(options)
+
+      service.getNextPage(next_page, (error, result) => {
+        expect(fetch.firstCall.args[0]).to.match(/nextpage.com/);
+        done();
+      })
+    })
+    it("should use the token if defined in options", (done) => {
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(response)))
+      const expectedToken = "myToken"
+      const options = {
+        token: expectedToken
+      }
+      service = new StarfishService(options)
+      service.getNextPage(next_page, (error, result) => {
+        expect(fetch.firstCall.args[1].headers.Authorization).to.equal(expectedToken);
+        done();
+      })
+    })
+    it("should return the api response", (done) => {
+      let service = new StarfishService(host, solution, token);
+      const observations = [buildObservations()];
+      const expected = {data: observations };
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
+
+      service.getNextPage(next_page, (err, response) => {
+        expect(err).to.be.null;
+        expect(response).to.be.not.null;
+        expect(response).to.deep.equal(expected);
+        done();
+      });
+    });
+    it("should respond with empty array if no device observations", (done) => {
+      let service = new StarfishService(host, solution, token);
+      const observations = [];
+      const expected = {data: observations};
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
+
+      service.getNextPage(next_page, (err, response) => {
+        expect(response.data).to.be.an('array').that.is.empty;
+        done();
+      });
+    });
+    it("should error if response is null", (done) => {
+      let service = new StarfishService(host, solution, token);
+      const expected = null;
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
+
+      service.getNextPage(next_page, (err, response) => {
+        expect(err.message).to.equal("next_page not found");
+        expect(response).to.not.exist;
+        done();
+      });
+    });
+    it("should error if get request fails", (done) => {
+      let service = new StarfishService(host, solution, token);
+      const expected = new Error("something bad");
+
+      fetch.onFirstCall().rejects(expected);
+
+      service.getNextPage(next_page, (err, response) => {
+        expect(err).to.equal(expected);
+        expect(response).to.not.exist;
+        done();
+      });
+    });
+    it("should call callback with next_page if response header has it", (done) => {
+      let service = new StarfishService(host, solution, token);
+      const response = new Response(JSON.stringify([]));
+      response.headers.set("next_page", "http://somepage.com");
+      const expected = {next_page: "http://somepage.com", data: [] };
+      fetch.onFirstCall().resolves(response);
+
+      service.getNextPage(next_page, (err, response) => {
+        expect(err).to.be.null;
+        expect(response).to.be.not.null;
+        expect(response).to.deep.equal(expected);
+        done();
       });
     });
   });
