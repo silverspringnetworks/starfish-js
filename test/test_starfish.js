@@ -304,7 +304,7 @@ describe('StarfishService', () =>  {
       let service = new StarfishService(host, solution, token);
       const observations = [buildObservations()];
       const expected = {data: observations };
-      fetch.onFirstCall().resolves(new Response(JSON.stringify({body: observations})));
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
 
       service.getObservations((err, response) => {
         expect(err).to.be.null;
@@ -317,7 +317,7 @@ describe('StarfishService', () =>  {
       let service = new StarfishService(host, solution, token);
       const observations = [];
       const expected = {data: observations};
-      fetch.onFirstCall().resolves(new Response(JSON.stringify({body: observations})));
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
 
       service.getObservations((err, response) => {
         expect(response.data).to.be.an('array').that.is.empty;
@@ -349,8 +349,10 @@ describe('StarfishService', () =>  {
     });
     it("should call callback with next_page if response header has it", (done) => {
       let service = new StarfishService(host, solution, token);
+      const response = new Response(JSON.stringify([]));
+      response.headers.set("next_page", "http://somepage.com");
       const expected = {next_page: "http://somepage.com", data: [] };
-      fetch.onFirstCall().resolves(new Response(JSON.stringify({headers:{ next_page: "http://somepage.com"}, body: []})));
+      fetch.onFirstCall().resolves(response);
 
       service.getObservations((err, response) => {
         expect(err).to.be.null;
@@ -365,7 +367,7 @@ describe('StarfishService', () =>  {
       let service = new StarfishService(host, solution, token);
       const observations = [buildObservations()];
       const expected = {data: observations};
-      fetch.onFirstCall().resolves(new Response(JSON.stringify({body: observations})));
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
       const deviceid = '1234'
 
       service.getDeviceObservations(deviceid, (err, response) => {
@@ -387,7 +389,7 @@ describe('StarfishService', () =>  {
       let service = new StarfishService(host, solution, token);
       const observations = [buildObservations()];
       const expected = {data: observations};
-      fetch.onFirstCall().resolves(new Response(JSON.stringify({body: observations})));
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
 
       service.getDeviceObservations('1234', (err, response) => {
         expect(err).to.not.exist;
@@ -400,10 +402,9 @@ describe('StarfishService', () =>  {
       let service = new StarfishService(host, solution, token);
       const observations = [];
       const expected = {data: observations};
-      fetch.onFirstCall().resolves(new Response(JSON.stringify({body: observations})));
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
 
       service.getDeviceObservations('1234', (err, response) => {
-        console.log(">>>>>>>>>>>>>>>>>>> response:", JSON.stringify(response));
         expect(response.data).to.be.an('array').that.is.empty;
         done();
       });
@@ -432,8 +433,10 @@ describe('StarfishService', () =>  {
     });
     it("should call callback with next_page if response header has it", (done) => {
       let service = new StarfishService(host, solution, token);
+      const response = new Response(JSON.stringify([]));
+      response.headers.set("next_page", "http://somepage.com");
       const expected = {next_page: "http://somepage.com", data: [] };
-      fetch.onFirstCall().resolves(new Response(JSON.stringify({headers:{ next_page: "http://somepage.com"}, body: []})));
+      fetch.onFirstCall().resolves(response);
 
       service.getDeviceObservations('1234', (err, response) => {
         expect(err).to.be.null;
@@ -874,7 +877,7 @@ describe('StarfishService', () =>  {
       let service = new StarfishService(host, solution, token);
       const observations = [buildObservations()];
       const expected = {data: observations };
-      fetch.onFirstCall().resolves(new Response(JSON.stringify({body: observations})));
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
 
       service.getNextPage(next_page, (err, response) => {
         expect(err).to.be.null;
@@ -887,7 +890,7 @@ describe('StarfishService', () =>  {
       let service = new StarfishService(host, solution, token);
       const observations = [];
       const expected = {data: observations};
-      fetch.onFirstCall().resolves(new Response(JSON.stringify({body: observations})));
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(observations)));
 
       service.getNextPage(next_page, (err, response) => {
         expect(response.data).to.be.an('array').that.is.empty;
@@ -919,8 +922,10 @@ describe('StarfishService', () =>  {
     });
     it("should call callback with next_page if response header has it", (done) => {
       let service = new StarfishService(host, solution, token);
+      const response = new Response(JSON.stringify([]));
+      response.headers.set("next_page", "http://somepage.com");
       const expected = {next_page: "http://somepage.com", data: [] };
-      fetch.onFirstCall().resolves(new Response(JSON.stringify({headers:{ next_page: "http://somepage.com"}, body: []})));
+      fetch.onFirstCall().resolves(response);
 
       service.getNextPage(next_page, (err, response) => {
         expect(err).to.be.null;
