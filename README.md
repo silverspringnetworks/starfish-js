@@ -107,7 +107,7 @@ The following examples assume that you have an instance of starfish named `starf
     } else {
       console.log("Return device observations: ", JSON.stringify(data))
       if(response.next_page)
-        starfish.getNextPage(resposne.next_page, .......)
+        starfish.getNextPage(response.next_page, .......)
     }
   })
 ```
@@ -149,7 +149,7 @@ Use `getNextPage` to paginate through the observations.
     } else {
       console.log("Return all device observations: ", JSON.stringify(response.data))
       if(response.next_page)
-        starfish.getNextPage(resposne.next_page, .......)
+        starfish.getNextPage(response.next_page, .......)
     }
   })
 
@@ -157,7 +157,7 @@ Use `getNextPage` to paginate through the observations.
 ```
 
 ### Get Next Page
- This will return the next page of data upto the limit specified in the original request or default limit of 1MB.
+ This will return the next page of data up to the limit specified in the original request or default limit of 1MB.
  Calls the callback with error if `next_page` is either empty or there is no data.
 
  ```js
