@@ -156,6 +156,113 @@ Use `getNextPage` to paginate through the observations.
  Use `queryDeviceObservations(deviceId, query, callback)` for querying device observations.
 ```
 
+### Get Device Templates
+This will return the list of device templates.
+
+```js
+  starfish.getDeviceTemplates((err, data) => {
+    if(err) {
+      console.log("Error:", err)
+    } else {
+      console.log("Return devices: ", data)
+    }
+  })
+```
+
+Response format in case of success:
+
+```js
+  {
+    deviceTemplates: [
+      {
+        id: 'someid',
+        name: 'templateName',
+        sensors: ['few', 'sensors']
+      }
+    ]
+  }
+```
+
+### Get count of Device Templates by `count`
+
+```js
+  starfish.queryDeviceTemplates({count:true}, (err, data) => {
+    if(err) {
+      console.log("Error:", err)
+    } else {
+      console.log("Return devices: ", data)
+    }
+  })
+```
+
+Response format in case of success:
+
+```js
+  {
+    count: 1
+  }
+```
+
+### Post Device Template
+
+```js
+  const deviceTemplate = {
+    deviceTemplate: {
+      name: 'templateName',
+      sensors: ["few", "sensors"]
+    }
+  }
+  starfish.postDeviceTemplate(deviceTemplate, (err, data) => {
+    if(err) {
+      console.log("Error:", err)
+    } else {
+      console.log("Return devices: ", data)
+    }
+  })
+```
+
+Response format in case of success:
+```js
+  {
+    deviceTemplates: {
+        id: 'newlycreateduuid',
+        name: 'templateName',
+        sensors: ['few', 'sensors']
+      }
+  }
+```
+
+### Edit Device Template
+
+```js
+  const deviceTemplate = {
+    deviceTemplate: {
+      id: 'existinguuid',
+      name: 'newName',
+      sensors: ["different", "sensors"]
+    }
+  }
+  starfish.putDeviceTemplate(deviceTemplate, (err, data) => {
+    if(err) {
+      console.log("Error:", err)
+    } else {
+      console.log("Return devices: ", data)
+    }
+  })
+```
+
+Response format in case of success:
+
+```js
+  {
+    deviceTemplates: {
+      id: 'existinguuid',
+      name: 'newName',
+      sensors: ["different", "sensors"]
+    }
+  }
+```
+
 ### Get Next Page
  This will return the next page of data up to the limit specified in the original request or default limit of 1MB.
  Calls the callback with error if `next_page` is either empty or there is no data.
