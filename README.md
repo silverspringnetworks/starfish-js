@@ -155,7 +155,23 @@ Use `getNextPage` to paginate through the observations.
 
  Use `queryDeviceObservations(deviceId, query, callback)` for querying device observations.
 ```
+### Get Next Page
+ This will return the next page of data up to the limit specified in the original request or default limit of 1MB.
+ Calls the callback with error if `next_page` is either empty or there is no data.
 
+ ```js
+ starfish.getNextPage(next_page, (err, response) => {
+    if(err) {
+      console.log("Error:", err)
+    } else {
+      console.log("Return next page data: ", JSON.stringify(response.data))
+      if(response.next_page)
+        starfish.getNextPage(reseponse.next_page, .....)
+    }
+  })
+
+ ```
+ 
 ### Get Device Templates
 This will return the list of device templates.
 
@@ -242,20 +258,3 @@ Response format in case of success:
     }
   }
 ```
-
-### Get Next Page
- This will return the next page of data up to the limit specified in the original request or default limit of 1MB.
- Calls the callback with error if `next_page` is either empty or there is no data.
-
- ```js
- starfish.getNextPage(next_page, (err, response) => {
-    if(err) {
-      console.log("Error:", err)
-    } else {
-      console.log("Return next page data: ", JSON.stringify(response.data))
-      if(response.next_page)
-        starfish.getNextPage(reseponse.next_page, .....)
-    }
-  })
-
- ```
