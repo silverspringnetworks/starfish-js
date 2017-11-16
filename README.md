@@ -183,26 +183,6 @@ Response format in case of success:
   }
 ```
 
-### Get count of Device Templates by `count`
-
-```js
-  starfish.queryDeviceTemplates({count:true}, (err, data) => {
-    if(err) {
-      console.log("Error:", err)
-    } else {
-      console.log("Return devices: ", data)
-    }
-  })
-```
-
-Response format in case of success:
-
-```js
-  {
-    count: 1
-  }
-```
-
 ### Post Device Template
 
 ```js

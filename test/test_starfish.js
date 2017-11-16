@@ -618,7 +618,10 @@ describe('StarfishService', () =>  {
       {method: "postDeviceObservation", args: ["did", {}], response: {}},
       {method: "getDeviceObservations", args: ["did"], response: {}},
       {method: "postDevice", args: [{}], response: {}},
-      {method: "deleteDevice", args: ["did"], response: {}}
+      {method: "deleteDevice", args: ["did"], response: {}},
+      {method: "getDeviceTemplates", args: [], response: {}},
+      {method: "postDeviceTemplate", args: [{}], response: {}},
+      {method: "putDeviceTemplate", args: [{}], response: {}}
 
     ].forEach(scenario => {
       const call = callback => {
@@ -857,37 +860,6 @@ describe('StarfishService', () =>  {
 
         service.queryDeviceObservations("did", null, (error, response) => {
           expect(fetch.firstCall.args[0]).has.match(new RegExp("^.*observations$"));
-          done();
-        });
-      });
-    });
-    describe("queryDeviceTemplates", () => {
-      it("should use the querystring if passed", (done) => {
-        const qs = {'param': 'value'};
-        const service = new StarfishService(host, solution, token);
-        const expectedQueryString = "?param=value";
-        fetch.onFirstCall().returns(Promise.resolve(new Response('{}')));
-        service.queryDeviceTemplates(qs, (error, response) => {
-          expect(fetch.firstCall.args[0]).has.match(new RegExp("^.*" + expectedQueryString + "$"));
-          done();
-        });
-      });
-      it("should not add any querystring if not passed", () => {
-        const service = new StarfishService(host, solution, token);
-        fetch.onFirstCall().returns(Promise.resolve(new Response('{}')));
-        service.queryDeviceTemplates(null, (error, response) => {
-          expect(fetch.firstCall.args[0]).has.match(new RegExp("^.*devicetemplates$"));
-          done();
-        });
-      });
-      it('should return error if Starfish observation api has failed.', (done) => {
-        const service = new StarfishService(host, solution, token);
-        const expectedError = new Error("Error")
-        fetch.onFirstCall().returns(Promise.reject(expectedError))
-        service.queryDeviceTemplates({}, (err, response) => {
-          expect(response).to.be.null;
-          expect(err).to.not.be.null;
-          expect(err).to.equal(expectedError);
           done();
         });
       });
