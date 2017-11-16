@@ -622,7 +622,6 @@ describe('StarfishService', () =>  {
       {method: "getDeviceTemplates", args: [], response: {}},
       {method: "postDeviceTemplate", args: [{}], response: {}},
       {method: "putDeviceTemplate", args: [{}], response: {}}
-
     ].forEach(scenario => {
       const call = callback => {
         const method = service[scenario.method];
