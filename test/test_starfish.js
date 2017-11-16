@@ -83,6 +83,19 @@ function buildObservations() {
   return observations;
 }
 
+function buildDeviceTemplates() {
+  var response = {
+    "deviceTemplates": [
+      {
+        "id": "00000000-0000-0000-0000-000000000000",
+        "name": "test-templateName",
+        "sensors": ["gps", "temperature", "humidity"]
+      }
+    ]
+  };
+  return response;
+}
+
 describe('StarfishService', () =>  {
   let host;
   let token;
@@ -299,6 +312,125 @@ describe('StarfishService', () =>  {
       });
     });
   });
+
+  describe('getDeviceTemplates', () => {
+    it('should return devicetemplates retrieved from Starfish', (done) => {
+      const service = new StarfishService(host, solution, token);
+      const expectedResponse = buildDeviceTemplates();
+      fetch.onFirstCall().returns(Promise.resolve(new Response(JSON.stringify(expectedResponse))));
+      service.getDeviceTemplates((error, response) => {
+        expect(error).to.be.null;
+        expect(response).to.deep.equal(expectedResponse);
+        done();
+      });
+    });
+    it('should return error if devicetemplates undefined', (done) => {
+      const service = new StarfishService(host, solution, token);
+      fetch.onFirstCall().returns(Promise.resolve(new Response('{}')))
+      service.getDeviceTemplates((err, response) => {
+        expect(response).to.be.null;
+        expect(err).to.not.be.null;
+        expect(err.message).to.equal("No device templates found");
+        done();
+      });
+    });
+    it('should respond with error if no devicetemplates returned', (done) => {
+      const service = new StarfishService(host, solution, token);
+      const expected = {
+        'deviceTemplates': []
+      }
+      fetch.onFirstCall().returns(Promise.resolve(new Response(JSON.stringify(expected))));
+      service.getDeviceTemplates((err, response) => {
+        expect(response).to.be.null;
+        expect(err).to.not.be.null;
+        expect(err.message).to.equal("No device templates found");
+        done();
+      });
+    });
+    it("should respond with error if error obtained while fetching devicetemplates", (done) => {
+      const service = new StarfishService(host, solution, token);
+      const expectedError = new Error("Error");
+      fetch.onFirstCall().returns(Promise.reject(expectedError));
+      service.getDeviceTemplates((err, response) => {
+        expect(response).to.be.null;
+        expect(err).to.not.be.null;
+        expect(err).to.equal(expectedError);
+        done();
+      });
+    });
+  });
+
+  describe("postDeviceTemplate", () => {
+    it("should call the api with POST method", () => {
+      let service = new StarfishService(host, solution, token);
+      const testDeviceTemplate = {"name": "templateName", "sensors": ["some", "sensor"]}
+      fetch.onFirstCall().resolves(new Response('{}'));
+      service.postDeviceTemplate(testDeviceTemplate, (err, response) => {
+        expect(fetch.firstCall.args[1].method).to.equal('POST');
+        done();
+      });
+    });
+    it('should return success if post to devicetemplates api is success.', (done) => {
+      let service = new StarfishService(host, solution, token);
+      const testDeviceTemplate = {"name": "templateName", "sensors": ["some", "sensor"]}
+      const expected = Object.assign({"id": "templateid"}, testDeviceTemplate);
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(expected)));
+      service.postDeviceTemplate(testDeviceTemplate, (err, response) => {
+        expect(err).to.not.exist;
+        expect(response).to.not.be.null;
+        expect(response).to.deep.equal(expected);
+        done();
+      });
+    });
+    it('should return error if post to starfish devicetemplates api has failed.', (done) => {
+      let service = new StarfishService(host, solution, token);
+      const theError = new Error("Error")
+      fetch.onFirstCall().rejects(theError)
+      const testDeviceTemplate = {"name": "templateName", "sensors": ["some", "sensor"]}
+      service.postDeviceTemplate(testDeviceTemplate, (err, response) => {
+        expect(response).to.not.exist;
+        expect(err).to.be.not.null;
+        expect(err).to.equal(theError);
+        done();
+      });
+    });
+  });
+
+  describe("putDeviceTemplate", () => {
+    it("should call the api with PUT method", () => {
+      let service = new StarfishService(host, solution, token);
+      const testDeviceTemplate = {"id": "existingid", "name": "templateName", "sensors": ["some", "sensor"]}
+      fetch.onFirstCall().resolves(new Response('{}'));
+      service.putDeviceTemplate(testDeviceTemplate, (err, response) => {
+        expect(fetch.firstCall.args[1].method).to.equal('PUT');
+        done();
+      });
+    });
+    it('should return success if put to devicetemplates api is success.', (done) => {
+      let service = new StarfishService(host, solution, token);
+      const testDeviceTemplate = {"id": "existingid", "name": "templateName", "sensors": ["some", "sensor"]}
+      fetch.onFirstCall().resolves(new Response(JSON.stringify(testDeviceTemplate)));
+      service.putDeviceTemplate(testDeviceTemplate, (err, response) => {
+        expect(err).to.not.exist;
+        expect(response).to.not.be.null;
+        expect(response).to.deep.equal(testDeviceTemplate);
+        done();
+      });
+    });
+    it('should return error if put to starfish devicetemplates api has failed.', (done) => {
+      let service = new StarfishService(host, solution, token);
+      const theError = new Error("Error")
+      fetch.onFirstCall().rejects(theError)
+      const testDeviceTemplate = {"id": "existingid", "name": "templateName", "sensors": ["some", "sensor"]}
+      service.putDeviceTemplate(testDeviceTemplate, (err, response) => {
+        expect(response).to.not.exist;
+        expect(err).to.be.not.null;
+        expect(err).to.equal(theError);
+        done();
+      });
+    });
+  });
+
   describe('getObservations', () => {
     it("should return the api response", (done) => {
       let service = new StarfishService(host, solution, token);
@@ -486,8 +618,10 @@ describe('StarfishService', () =>  {
       {method: "postDeviceObservation", args: ["did", {}], response: {}},
       {method: "getDeviceObservations", args: ["did"], response: {}},
       {method: "postDevice", args: [{}], response: {}},
-      {method: "deleteDevice", args: ["did"], response: {}}
-
+      {method: "deleteDevice", args: ["did"], response: {}},
+      {method: "getDeviceTemplates", args: [], response: {}},
+      {method: "postDeviceTemplate", args: [{}], response: {}},
+      {method: "putDeviceTemplate", args: [{}], response: {}}
     ].forEach(scenario => {
       const call = callback => {
         const method = service[scenario.method];
