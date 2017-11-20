@@ -402,6 +402,7 @@ describe('StarfishService', () =>  {
       const testDeviceTemplate = {"id": "existingid", "name": "templateName", "sensors": ["some", "sensor"]}
       fetch.onFirstCall().resolves(new Response('{}'));
       service.putDeviceTemplate(testDeviceTemplate, (err, response) => {
+        expect(fetch.firstCall.args[1].body).to.equal(JSON.stringify(testDeviceTemplate));
         expect(fetch.firstCall.args[1].method).to.equal('PUT');
         done();
       });
