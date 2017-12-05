@@ -233,12 +233,12 @@ Response format in case of success:
 ```js
   const deviceTemplate = {
     deviceTemplate: {
-      id: 'existinguuid',
       name: 'newName',
       sensors: ["different", "sensors"]
     }
   }
-  starfish.putDeviceTemplate(deviceTemplate, (err, data) => {
+  const templateId = 'existinguuid'
+  starfish.putDeviceTemplate(templateId, deviceTemplate, (err, data) => {
     if(err) {
       console.log("Error:", err)
     } else {
