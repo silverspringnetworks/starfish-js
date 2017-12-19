@@ -258,3 +258,26 @@ Response format in case of success:
     }
   }
 ```
+
+### Get Static Templates
+
+```js
+  starfish.getStaticTemplates(err, data) => {
+    if (err) {
+      console.log("Error:", err);
+    } else {
+      console.log("Return devices:", data)
+    }
+  }
+```
+
+Response format in case of success:
+
+```js
+{
+  deviceTemplates: [{
+    name: 'staticTemplateName',
+    sensors: ["few", "sensors"]
+  }]
+}
+```

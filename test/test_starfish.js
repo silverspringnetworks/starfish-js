@@ -96,6 +96,17 @@ function buildDeviceTemplates() {
   return response;
 }
 
+function buildStaticTemplates() {
+  var response = {
+    "deviceTemplates": [
+      {
+        "name": "test-staticTemplate",
+        "sensors": ["gps", "temperature", "humidity"]
+      }
+    ]}
+  return response;
+};
+
 describe('StarfishService', () =>  {
   let host;
   let token;
@@ -436,6 +447,34 @@ describe('StarfishService', () =>  {
     });
   });
 
+  describe("getStaticTemplates", () => {
+    it('should return devicetemplates retrieved from Starfish', (done) => {
+      const service = new StarfishService(host, solution, token);
+      console.log(host);
+      console.log(solution);
+      console.log(token);
+      const expectedResponse = buildStaticTemplates();
+      console.log(JSON.stringify(expectedResponse));
+      fetch.onFirstCall().returns(Promise.resolve(new Response(JSON.stringify(expectedResponse))));
+      service.getStaticTemplates((error, response) => {
+        expect(error).to.be.null;
+        expect(response).to.deep.equal(expectedResponse);
+        done();
+      });
+    });
+    it("should respond with error if error obtained while fetching devicetemplates", (done) => {
+      const service = new StarfishService(host, solution, token);
+      const expectedError = new Error("Error");
+      fetch.onFirstCall().returns(Promise.reject(expectedError));
+      service.getStaticTemplates((err, response) => {
+        expect(response).to.be.null;
+        expect(err).to.not.be.null;
+        expect(err).to.equal(expectedError);
+        done();
+      });
+    });
+  });
+
   describe('getObservations', () => {
     it("should return the api response", (done) => {
       let service = new StarfishService(host, solution, token);
@@ -626,7 +665,8 @@ describe('StarfishService', () =>  {
       {method: "deleteDevice", args: ["did"], response: {}},
       {method: "getDeviceTemplates", args: [], response: {}},
       {method: "postDeviceTemplate", args: [{}], response: {}},
-      {method: "putDeviceTemplate", args: ['', {}], response: {}}
+      {method: "putDeviceTemplate", args: ['', {}], response: {}},
+      {method: "getStaticTemplates", args: [], response: {}, urlType: 'tenants'}
     ].forEach(scenario => {
       const call = callback => {
         const method = service[scenario.method];
@@ -726,7 +766,11 @@ describe('StarfishService', () =>  {
           service = new StarfishService(options)
           call((error, result) => {
             const uri = fetch.firstCall.args[0];
-            expect(uri).to.match(new RegExp(".*\/solutions\/" + expectedSolution));
+            if (scenario.urlType) {
+              expect(uri).to.match(new RegExp(".*\/" + scenario.urlType + "\/systemTenant\/devicetemplates"));
+            } else {
+              expect(uri).to.match(new RegExp(".*\/solutions\/" + expectedSolution));
+            }
             done();
           })
         })
@@ -740,7 +784,11 @@ describe('StarfishService', () =>  {
           service = new StarfishService(options)
 
           call((error, result) => {
-            expect(fetch.firstCall.args[0]).to.match(new RegExp(".*\/solutions\/" + expectedSolution));
+            if (scenario.urlType) {
+              expect(fetch.firstCall.args[0]).to.match(new RegExp(".*\/" + scenario.urlType + "\/systemTenant\/devicetemplates"));
+            } else {
+              expect(fetch.firstCall.args[0]).to.match(new RegExp(".*\/solutions\/" + expectedSolution));
+            }
             done();
           })
         })
