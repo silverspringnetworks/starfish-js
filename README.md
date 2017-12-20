@@ -60,7 +60,7 @@ The following examples assume that you have an instance of starfish named `starf
     ]
   }
 
-  starfish.postDeviceObservations(deviceId, observation, (err, data) => {
+  starfish.postDeviceObservation(deviceId, observation, (err, data) => {
     if(err) {
       console.log("Error:", err)
     } else {
